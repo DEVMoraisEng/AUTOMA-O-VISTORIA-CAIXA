@@ -909,13 +909,15 @@ def _extrair_campos_art(texto, log=None):
 
 def _scpo_obter_chromedriver(log_cb=print):
     """Detecta versão do Chrome e baixa ChromeDriver compatível."""
-    import subprocess as _subprocess_scpo
-
     versao_major = None
 
-    # 1) Método mais confiável: perguntar a versão direto ao chrome.exe.
-    #    Não depende do registro do Windows, que pode não existir (ex.: Chrome
-    #    instalado só para o usuário atual, sem chave em HKEY_LOCAL_MACHINE).
+    # 1) Método mais confiável e seguro: ler a versão direto do metadado do
+    #    arquivo chrome.exe (recurso FileVersion do Windows), SEM executar o
+    #    binário. Executar "chrome.exe --version" é arriscado: se o Chrome já
+    #    estiver aberto em segundo plano, o mecanismo de instância única do
+    #    Chrome repassa a chamada pro processo já existente, que abre uma
+    #    janela nova em vez de simplesmente devolver a versão — foi isso que
+    #    causou a tela "Quem está usando o Chrome?" aparecer.
     caminhos_chrome = [
         r"C:\Program Files\Google\Chrome\Application\chrome.exe",
         r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
@@ -924,14 +926,15 @@ def _scpo_obter_chromedriver(log_cb=print):
     for caminho in caminhos_chrome:
         if caminho and Path(caminho).exists():
             try:
-                flags = getattr(_subprocess_scpo, "CREATE_NO_WINDOW", 0)
-                saida = _subprocess_scpo.check_output(
-                    [caminho, "--version"], text=True, creationflags=flags
-                ).strip()
-                # Saída típica: "Google Chrome 150.0.7871.101"
-                versao_completa = saida.split()[-1]
+                import win32api as _win32api_scpo
+                info = _win32api_scpo.GetFileVersionInfo(caminho, "\\")
+                ms, ls = info["FileVersionMS"], info["FileVersionLS"]
+                versao_completa = (
+                    f"{_win32api_scpo.HIWORD(ms)}.{_win32api_scpo.LOWORD(ms)}."
+                    f"{_win32api_scpo.HIWORD(ls)}.{_win32api_scpo.LOWORD(ls)}"
+                )
                 versao_major = versao_completa.split(".")[0]
-                log_cb(f"  Chrome detectado (executável): v{versao_completa}")
+                log_cb(f"  Chrome detectado (arquivo): v{versao_completa}")
                 break
             except Exception:
                 pass
