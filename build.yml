@@ -1,0 +1,70 @@
+name: Gerar EXE - BERCAN Projetos v4
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"  # OBRIGATÓRIO — 3.12+ quebra PyInstaller no Windows
+
+      - name: Instalar dependências Python
+        shell: cmd
+        run: |
+          python -m pip install --upgrade pip
+          pip install python-docx==1.1.0 openpyxl==3.1.2 pywin32==306 pillow==10.2.0 lxml==5.1.0 python-dateutil selenium pyinstaller==6.3.0
+
+      # ========================================================
+      # GERAR EXE
+      # ========================================================
+      - name: Gerar EXE com PyInstaller
+        shell: cmd
+        run: |
+          python -m PyInstaller --onefile --windowed ^
+            --name "BercanProjetos" ^
+            --icon "icone_fixed.ico" ^
+            --add-data "assets;assets" ^
+            --hidden-import win32com.client ^
+            --hidden-import win32com.server.util ^
+            --hidden-import win32api ^
+            --hidden-import win32con ^
+            --hidden-import pywintypes ^
+            --hidden-import pythoncom ^
+            --hidden-import PIL._imaging ^
+            --hidden-import PIL.Image ^
+            --hidden-import PIL.ImageFilter ^
+            --hidden-import PIL.ImageOps ^
+            --hidden-import docx ^
+            --hidden-import docx.oxml ^
+            --hidden-import docx.oxml.ns ^
+            --hidden-import openpyxl ^
+            --hidden-import openpyxl.styles ^
+            --hidden-import openpyxl.drawing.image ^
+            --hidden-import lxml.etree ^
+            --hidden-import selenium ^
+            --hidden-import selenium.webdriver ^
+            --hidden-import selenium.webdriver.chrome.service ^
+            --hidden-import selenium.webdriver.support.ui ^
+            --hidden-import selenium.webdriver.support.expected_conditions ^
+            --collect-all win32com ^
+            --collect-all docx ^
+            --collect-all openpyxl ^
+            --collect-all lxml ^
+            --collect-all selenium ^
+            app.py
+
+      - name: Upload do EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: BercanProjetos-v4-Windows
+          path: dist/BercanProjetos.exe
+          retention-days: 30
