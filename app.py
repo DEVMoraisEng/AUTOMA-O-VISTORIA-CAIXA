@@ -909,22 +909,57 @@ def _extrair_campos_art(texto, log=None):
 
 def _scpo_obter_chromedriver(log_cb=print):
     """Detecta versão do Chrome e baixa ChromeDriver compatível."""
-    versao_major = "147"  # fallback — atualizar se o Chrome avançar muito
-    try:
-        for chave in [
-            r"SOFTWARE\Google\Chrome\BLBeacon",
-            r"SOFTWARE\Wow6432Node\Google\Chrome\BLBeacon",
+    import subprocess as _subprocess_scpo
+
+    versao_major = None
+
+    # 1) Método mais confiável: perguntar a versão direto ao chrome.exe.
+    #    Não depende do registro do Windows, que pode não existir (ex.: Chrome
+    #    instalado só para o usuário atual, sem chave em HKEY_LOCAL_MACHINE).
+    caminhos_chrome = [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        str(Path(os.environ.get("LOCALAPPDATA", "")) / "Google" / "Chrome" / "Application" / "chrome.exe"),
+    ]
+    for caminho in caminhos_chrome:
+        if caminho and Path(caminho).exists():
+            try:
+                flags = getattr(_subprocess_scpo, "CREATE_NO_WINDOW", 0)
+                saida = _subprocess_scpo.check_output(
+                    [caminho, "--version"], text=True, creationflags=flags
+                ).strip()
+                # Saída típica: "Google Chrome 150.0.7871.101"
+                versao_completa = saida.split()[-1]
+                versao_major = versao_completa.split(".")[0]
+                log_cb(f"  Chrome detectado (executável): v{versao_completa}")
+                break
+            except Exception:
+                pass
+
+    # 2) Fallback: registro do Windows (HKLM e também HKCU, cobrindo instalação
+    #    só-para-o-usuário-atual, que é o caso que causou o bug original).
+    if not versao_major:
+        for hive, chave in [
+            (_winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Google\Chrome\BLBeacon"),
+            (_winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Wow6432Node\Google\Chrome\BLBeacon"),
+            (_winreg.HKEY_CURRENT_USER, r"SOFTWARE\Google\Chrome\BLBeacon"),
         ]:
             try:
-                with _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, chave) as k:
+                with _winreg.OpenKey(hive, chave) as k:
                     v, _ = _winreg.QueryValueEx(k, "version")
                     versao_major = v.split(".")[0]
-                    log_cb(f"  Chrome detectado: v{v}")
+                    log_cb(f"  Chrome detectado (registro): v{v}")
                     break
             except Exception:
                 pass
-    except Exception:
-        pass
+
+    # 3) Se nada funcionou, avisa claramente em vez de usar um número
+    #    desatualizado "no escuro" (foi isso que causou o erro original).
+    if not versao_major:
+        raise Exception(
+            "Não foi possível detectar a versão do Chrome instalado. "
+            "Verifique se o Google Chrome está instalado em um dos caminhos padrão."
+        )
 
     driver_dir  = Path.home() / "AppData" / "Local" / "SCPODriver"
     driver_path = driver_dir / "chromedriver.exe"
