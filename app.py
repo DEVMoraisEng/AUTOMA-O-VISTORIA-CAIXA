@@ -1186,12 +1186,12 @@ def _scpo_executar(dados, step_cb, log_cb, done_cb,
                     sel_sub.select_by_visible_text(opt.text); break
         except Exception as e: log_cb(f"  Subclasse: {e}")
 
-        # Tipo Construção — Edifício
+        # Tipo Construção — Casa
         try:
             sel_tipo = _Select_scpo(driver.find_element(
                 _By_scpo.ID, "PlaceHolderConteudo_CboTipoConstrucao"))
             for opt in sel_tipo.options:
-                if "dif" in opt.text.lower():
+                if "casa" in opt.text.lower():
                     sel_tipo.select_by_visible_text(opt.text); break
         except Exception as e: log_cb(f"  Tipo Construção: {e}")
 
