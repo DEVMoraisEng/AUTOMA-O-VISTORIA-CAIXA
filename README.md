@@ -1,84 +1,57 @@
-# PreencherDocumentos — Morais Engenharia
+# AUT-PRANCHA-HUMANIZADA
 
-Geração automática de **Declaração ART** (Word) e **Memorial** (Excel) em PDF,
-a partir dos dados extraídos da ART do CREA-GO.
+Gera a prancha de venda (planta humanizada + fachada 3D + quadro de áreas) no
+papel timbrado da Morais, a partir do PDF vetorial que sai do Revit.
 
----
+**Gerar:** https://devmoraiseng.github.io/AUT-PRANCHA-HUMANIZADA/gerar.html
 
-## Estrutura do repositório
+A página roda o programa dentro do próprio navegador (Pyodide/WebAssembly).
+Não há servidor: os PDFs não saem do computador de quem gera.
 
-```
-PreencherDocumentos/
-├── app.py                  ← Script principal (UI + lógica)
-├── icone.ico               ← Ícone do .exe (adicionar manualmente)
-├── README.md
-└── .github/
-    └── workflows/
-        └── build.yml       ← Pipeline CI/CD
-```
+## O caminho recomendado: exportar pelo Revit
 
----
+Instale a extensão de `revit/` no pyRevit (`revit/COMO_INSTALAR.md`) e use
+**Morais → Exportar Tudo**. Saem três arquivos: a planta com cada ambiente
+pintado com uma cor própria, a **ficha `.json`** dizendo qual cor é qual, e a
+fachada 3D.
 
-## Como usar o app
+Com a ficha o gerador **lê** o limite de cada cômodo. Sem ela, ele **deduz** a
+partir do desenho — e é da dedução que vinham os erros (escada virando banheiro,
+grama entrando na casa por um vão de porta). Sem a ficha continua funcionando,
+só volta a deduzir.
 
-1. Baixe o `PreencherDocumentos.exe` na aba **Actions → último build → Artifacts**
-2. Execute o `.exe` — não precisa instalar Python nem nenhuma dependência
-3. Preencha os campos:
-   - Selecione o **template Word** (Declaração ART)
-   - Selecione o **Memorial Excel** (versão atual)
-   - Selecione a **pasta de assinaturas** (com os arquivos de imagem dos engenheiros)
-   - Selecione a **pasta de saída** (onde serão gerados os PDFs)
-   - Escolha o **engenheiro** responsável
-   - Preencha os **dados da ART** (campos {1} a {11})
-   - Marque as **opções**: sistema de esgoto e tipo de lote
-   - Informe a **quantidade de casas**
-4. Clique em **GERAR DOCUMENTOS**
+## Estrutura
 
-Os arquivos gerados serão nomeados automaticamente:
-- `DECLARAÇÃO ART CS {N} – {endereço}.pdf`
-- `MEMORIAL CS {N} – {endereço}.pdf`
-
----
-
-## Requisitos da máquina do usuário
-
-- Windows 10 ou 11
-- Microsoft Word instalado (para exportação PDF)
-- Microsoft Excel instalado (para exportação PDF)
-
----
-
-## Stack técnica
-
-| Componente | Versão |
+| pasta | o que é |
 |---|---|
-| Python | 3.11 (build apenas) |
-| python-docx | preenchimento Word |
-| openpyxl | preenchimento Excel |
-| comtypes | exportação PDF via Office COM |
-| lxml | manipulação XML checkboxes |
-| Pillow | inserção de imagens |
-| PyInstaller | empacotamento .exe |
+| `revit/` | a extensão pyRevit (os três botões dentro do Revit) |
+| `app/` | o programa (Python) e o modelo de papel timbrado |
+| `entrada/` | onde você coloca `PLANTA.pdf` e `3D.pdf` |
+| `exemplos/` | comparativos antes/depois |
+| `.github/workflows/gerar.yml` | roda o programa pelo GitHub, sem instalar nada |
+| `index.html` | página de apresentação |
+| `gerar.html` + `gerar-worker.js` | o gerador que roda no navegador |
 
----
+## Caminho alternativo: rodar pelo GitHub
 
-## Atualizar o app
+1. `entrada/` → **Add file → Upload files** → sobe `PLANTA.pdf` e `3D.pdf`
+2. **Actions → Gerar prancha → Run workflow** → preenche o título
+3. Baixa o artefato **prancha** no fim da execução
 
-1. Edite o arquivo `app.py` no GitHub
-2. Faça commit na branch `main`
-3. O GitHub Actions gera um novo `.exe` automaticamente (~3 min)
-4. Baixe o artefato na aba Actions
+## Rodar no computador
 
----
-
-## Adicionando novo engenheiro
-
-Em `app.py`, localize o dicionário `ENGENHEIROS` e adicione:
-
-```python
-"NOME COMPLETO EM MAIÚSCULAS": {
-    "cpf": "000.000.000-00",
-    "crea": "0000000D-GO",
-    "assinatura": "NOME.png",   # nome do arquivo de imagem na pasta assinaturas
-},
+```bash
+cd app
+pip install -r requirements.txt
+python main.py --planta ../entrada/PLANTA.pdf --ficha ../entrada/PLANTA.json \
+               --fachada ../entrada/3D.pdf \
+               --titulo "CASA 1 E 2" --lote 90.00 \
+               --saida PRANCHA.pdf --relatorio conferencia.json
 ```
+
+Detalhes de funcionamento, regras de acabamento e opções: `app/COMO_FUNCIONA.md`.
+
+## Token
+
+Não usa. Roda offline. Se um dia precisar, vai em
+**Settings → Secrets and variables → Actions** — nunca no código.

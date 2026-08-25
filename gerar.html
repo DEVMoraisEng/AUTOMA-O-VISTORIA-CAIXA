@@ -1,0 +1,328 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gerar prancha · Morais Engenharia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--azul:#295778;--azul-esc:#1e3f58;--teal:#8FDCD2;--verde:#2a9d5c;--verde-esc:#1a6b40;
+ --bg:#EAF1F3;--bg2:#F5F9FA;--border:#b8d0da;--border2:#d0e4ec;
+ --text:#1a3347;--text3:#5a8099;--branco:#fff;--vermelho:#c0392b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+.topo{background:var(--azul-esc);color:#fff;padding:22px 20px}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+.topo h1{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800}
+.topo p{color:var(--teal);font-size:13px}
+.voltar{display:inline-block;color:var(--teal);font-size:12px;text-decoration:none;margin-bottom:8px}
+main{padding:22px 0 60px}
+.card{background:var(--branco);border:1px solid var(--border2);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+h2{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--azul);
+   text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+.dupla{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.dupla.tres{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:760px){.dupla,.dupla.tres{grid-template-columns:1fr}}
+.solta small{display:block;font-size:10.5px;color:var(--verde-esc);font-weight:700;
+  text-transform:uppercase;letter-spacing:.4px;margin-top:5px}
+.solta{border:2px dashed var(--border);border-radius:10px;background:var(--bg2);
+  padding:22px 16px;text-align:center;cursor:pointer;transition:.15s}
+.solta:hover,.solta.sobre{border-color:var(--verde);background:#f0faf4}
+.solta.cheio{border-style:solid;border-color:var(--verde);background:#f0faf4}
+.solta b{display:block;font-size:14px}
+.solta span{font-size:12px;color:var(--text3)}
+label{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;
+      color:var(--text3);font-weight:600;margin-bottom:4px}
+input,select{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;
+  font-family:inherit;font-size:14px;color:var(--text);background:#fff}
+input:focus,select:focus{outline:2px solid var(--teal);outline-offset:-1px}
+.campos{display:grid;grid-template-columns:2fr 1.4fr;gap:12px}
+.campos.tres{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:760px){.campos{grid-template-columns:1fr 1fr}}
+.btn{background:var(--verde);color:#fff;border:0;border-radius:9px;padding:12px 22px;
+  font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.btn:hover{background:var(--verde-esc)}
+.btn:disabled{background:#b9c7cd;cursor:not-allowed}
+.btn.sec{background:var(--azul)}
+.barra{height:7px;background:var(--bg);border-radius:5px;overflow:hidden;margin-top:12px}
+.barra i{display:block;height:100%;background:var(--verde);width:0;transition:width .3s}
+.status{font-size:13px;color:var(--text3);margin-top:7px}
+.status.err{color:var(--vermelho);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--border2);vertical-align:middle}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+td select,td input{padding:5px 7px;font-size:12.5px}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px}
+.ok{background:#e6f6ec;color:var(--verde-esc)}
+.at{background:#fdeeec;color:var(--vermelho)}
+.obs{font-size:11.5px;color:var(--text3);margin-top:3px;max-width:230px;line-height:1.35}
+.aviso{border-left:3px solid var(--verde);background:var(--bg2);padding:10px 13px;
+  border-radius:0 8px 8px 0;font-size:13px;margin-top:12px}
+.aviso.alerta{border-left-color:var(--vermelho)}
+.esconde{display:none}
+pre{background:var(--azul-esc);color:#ffd9d4;border-radius:8px;padding:12px 14px;
+ overflow-x:auto;font-size:12px}
+embed{width:100%;height:640px;border:1px solid var(--border2);border-radius:8px;margin-top:12px}
+footer{color:var(--text3);font-size:12px;text-align:center;padding:16px 0 34px}
+</style>
+
+<div class="topo"><div class="wrap">
+  <a class="voltar" href="index.html">← Prancha Humanizada</a>
+  <h1>Gerar prancha</h1>
+  <p>Roda no seu próprio navegador — os PDFs não saem do computador</p>
+</div></div>
+
+<main class="wrap">
+
+  <div class="card">
+    <h2>1 · Os arquivos do Revit</h2>
+    <div class="dupla tres">
+      <div class="solta" id="s-planta">
+        <b id="n-planta">Planta baixa</b>
+        <span>clique ou arraste o PDF</span>
+      </div>
+      <div class="solta" id="s-ficha">
+        <b id="n-ficha">Ficha de cores</b>
+        <span>o .json do pyRevit</span>
+        <small id="tag-ficha">recomendado</small>
+      </div>
+      <div class="solta" id="s-fachada">
+        <b id="n-fachada">Fachada 3D</b>
+        <span>clique ou arraste o PDF</span>
+      </div>
+    </div>
+    <input type="file" id="f-planta" accept="application/pdf" class="esconde">
+    <input type="file" id="f-ficha" accept="application/json,.json" class="esconde">
+    <input type="file" id="f-fachada" accept="application/pdf" class="esconde">
+    <div class="aviso"><b>A ficha de cores muda o jogo.</b> Sem ela o programa
+      <i>deduz</i> onde termina cada cômodo olhando o desenho — e erra em planta
+      com vão aberto. Com ela ele <i>lê</i>: quem pinta cada ambiente é o próprio
+      Revit, pelo botão <b>Morais → Planta Humanizada</b>. A ficha é o
+      <code>.json</code> que sai junto com o PDF. Sem a ficha ainda funciona,
+      só volta a deduzir.</div>
+    <div class="barra"><i id="barra"></i></div>
+    <div class="status" id="status">Preparando o programa…</div>
+  </div>
+
+  <div class="card">
+    <h2>2 · Dados da casa</h2>
+    <div class="campos">
+      <div><label>Título da prancha</label><input id="titulo" placeholder="deixe vazio para não sair título"></div>
+      <div><label>Numeração dos ambientes</label>
+        <select id="semnum">
+          <option value="0">QUARTO 01, BANHO 02…</option>
+          <option value="1">Sem número: QUARTO, BANHO</option>
+        </select></div>
+    </div>
+    <div class="campos tres" style="margin-top:12px">
+      <div><label>Área construída (m²)</label><input id="construida" inputmode="decimal" placeholder="soma dos ambientes"></div>
+      <div><label>Área de quintal (m²)</label><input id="quintal" inputmode="decimal" placeholder="soma das descobertas"></div>
+      <div><label>Área do lote (m²)</label><input id="lote" inputmode="decimal" placeholder="da matrícula"></div>
+    </div>
+    <div class="aviso">Os três campos de área são números de projeto e matrícula.
+      Deixe vazio para usar a soma dos ambientes da planta — quando você digita,
+      vale o que você digitou. A linha do lote só aparece se for preenchida.</div>
+  </div>
+
+  <div class="card esconde" id="c-ambientes">
+    <h2>3 · Confira os ambientes</h2>
+    <p style="font-size:13.5px">Nome, área e posição saem do próprio arquivo. O que você
+      decide aqui é o <b>acabamento do piso</b> e o <b>nome que vai na peça de venda</b>.</p>
+    <div class="aviso" id="aviso-metodo"></div>
+    <div style="overflow-x:auto;margin-top:10px">
+      <table id="t-amb">
+        <thead><tr>
+          <th>Ambiente (projeto)</th><th>Nome na peça de venda</th>
+          <th class="num">Área</th><th>Conferência</th><th>Acabamento</th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+    <div id="alerta-escala"></div>
+  </div>
+
+  <div class="card">
+    <button class="btn" id="b-gerar" disabled>Gerar prancha</button>
+    <button class="btn sec esconde" id="b-baixar">Baixar PDF</button>
+  </div>
+
+  <div class="card esconde" id="c-detalhe">
+    <h2>Detalhe do erro</h2>
+    <pre style="white-space:pre-wrap"><code id="detalhe"></code></pre>
+  </div>
+
+  <div class="card esconde" id="c-saida">
+    <h2>Resultado</h2>
+    <embed id="visual" type="application/pdf">
+  </div>
+
+</main>
+<footer>Morais Engenharia e Construção · roda 100% no navegador, sem servidor</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const arq = { planta: null, fachada: null, ficha: null };
+let leitura = null, pdfGerado = null, pronto = false, motorOk = true;
+
+let w = null;
+try {
+  w = new Worker("gerar-worker.js");
+  w.onerror = e => {
+    motorOk = false;
+    status("Não consegui carregar o motor (gerar-worker.js). " +
+           (e.message || "verifique se o arquivo foi publicado junto com esta página."), true);
+  };
+  w.postMessage({ tipo: "iniciar" });
+} catch (e) {
+  status("Este navegador não conseguiu abrir o processador em segundo plano: " + e.message, true);
+}
+
+/* Se em 90 s o motor não deu sinal, a pessoa merece saber por quê. */
+setTimeout(() => {
+  if (!pronto) status("O motor está demorando mais que o normal. Se travar aqui, "
+    + "quase sempre é bloqueio de rede ao CDN (jsdelivr/unpkg) na rede da empresa.", true);
+}, 90000);
+
+function status(t, erro) { const s = $("status"); s.textContent = t; s.className = "status" + (erro ? " err" : ""); }
+function barra(p) { $("barra").style.width = (p || 0) + "%"; }
+
+w.onmessage = ({ data: m }) => {
+  if (m.tipo === "andamento") { status(m.texto); barra(m.pct); }
+  else if (m.tipo === "pronto") { pronto = true; status("Pronto. Solte os arquivos do Revit acima."); barra(100); liberar(); tentarLer(); }
+  else if (m.tipo === "leitura") {
+    leitura = m.dados; pintarAmbientes();
+    if (!$("construida").value) $("construida").placeholder = fmt(m.dados.sugestao_construida);
+    if (!$("quintal").value) $("quintal").placeholder = fmt(m.dados.sugestao_quintal);
+    status("Ambientes lidos. Confira a tabela e clique em Gerar."); barra(100); liberar();
+  }
+  else if (m.tipo === "gerado") { entregar(m.dados); }
+  else if (m.tipo === "erro") {
+    status(m.texto, true);
+    if (m.detalhe) { $("detalhe").textContent = m.detalhe; $("c-detalhe").classList.remove("esconde"); }
+    liberar();
+  }
+};
+
+/* ---------- arquivos ---------- */
+function ligarSolta(qual) {
+  const cx = $("s-" + qual), inp = $("f-" + qual);
+  cx.onclick = () => inp.click();
+  cx.ondragover = e => { e.preventDefault(); cx.classList.add("sobre"); };
+  cx.ondragleave = () => cx.classList.remove("sobre");
+  cx.ondrop = e => { e.preventDefault(); cx.classList.remove("sobre"); receber(qual, e.dataTransfer.files[0]); };
+  inp.onchange = () => receber(qual, inp.files[0]);
+}
+["planta", "ficha", "fachada"].forEach(ligarSolta);
+
+async function receber(qual, f) {
+  if (!f) return;
+  if (qual === "ficha") {
+    if (!/\.json$/i.test(f.name)) { status("A ficha de cores é o arquivo .json que sai junto com o PDF.", true); return; }
+    const txt = await f.text();
+    try { JSON.parse(txt); } catch (e) { status("Esse .json está corrompido: " + e.message, true); return; }
+    arq.ficha = txt;
+    $("tag-ficha").textContent = "lendo do Revit";
+  } else {
+    if (f.type !== "application/pdf" && !/\.pdf$/i.test(f.name)) { status("Só PDF, por favor.", true); return; }
+    const b = new Uint8Array(await f.arrayBuffer());
+    let s = ""; const bloco = 0x8000;
+    for (let i = 0; i < b.length; i += bloco) s += String.fromCharCode.apply(null, b.subarray(i, i + bloco));
+    arq[qual] = btoa(s);
+  }
+  $("s-" + qual).classList.add("cheio");
+  $("n-" + qual).textContent = f.name;
+  liberar();
+  tentarLer();
+}
+
+const fmt = v => (v == null ? "" : v.toFixed(2).replace(".", ","));
+function liberar() { $("b-gerar").disabled = !(pronto && arq.planta && arq.fachada); }
+
+function tentarLer() {
+  if (!pronto || !arq.planta) return;
+  status("Lendo os ambientes da planta…"); barra(30);
+  w.postMessage({ tipo: "ler", planta: arq.planta, ficha: arq.ficha,
+                  semNumero: $("semnum").value === "1" });
+}
+
+/* ---------- tabela de ambientes ---------- */
+function pintarAmbientes() {
+  const tb = $("t-amb").querySelector("tbody"); tb.innerHTML = "";
+  for (const a of leitura.ambientes) {
+    const tr = document.createElement("tr");
+    const ok = a.confiavel;
+    tr.innerHTML =
+      `<td>${a.nome}</td>` +
+      `<td><input data-nome="${a.nome}" value="${a.rotulo}"></td>` +
+      `<td class="num">${a.area.toFixed(2).replace(".", ",")} m²</td>` +
+      `<td><span class="tag ${ok ? "ok" : "at"}">${ok ? (leitura.via_ficha ? "lido do Revit" : "confere · vai ser repintado") : "não repintado"}</span>` +
+        (ok ? "" : `<div class="obs">${a.motivo}</div>`) + `</td>` +
+      `<td>` + (ok ? `<select data-piso="${a.nome}">` +
+        leitura.acabamentos.map(x => `<option value="${x}"${x === a.acabamento ? " selected" : ""}>${x}</option>`).join("") +
+      `</select>` : "—") + `</td>`;
+    tb.appendChild(tr);
+  }
+  $("c-ambientes").classList.remove("esconde");
+  $("aviso-metodo").innerHTML = leitura.via_ficha
+    ? `<b>Leitura direta do Revit.</b> Cada ambiente foi pintado com uma cor
+       própria pelo pyRevit e a ficha diz qual cor é qual. O programa não deduz
+       limite nenhum: ele lê a cor, e o desenho do móvel que fica por cima é
+       recuperado até — no máximo — a área que o próprio projeto declara.
+       Se o PDF e o .json forem de exportações diferentes, o ambiente aparece
+       aqui como <b>não repintado</b> em vez de sair errado.`
+    : `<b>Conferência.</b> Sem a ficha de cores o programa reconstrói cada
+       ambiente a partir das paredes e compara com a área escrita na planta.
+       Bateu, ele repinta. Não bateu, ele <b>não repinta aquele ambiente</b> —
+       fica o desenho original ali, e o motivo aparece na linha. É a garantia
+       de que ele nunca pinta piso no lugar errado.`;
+  $("alerta-escala").innerHTML = leitura.via_ficha
+    ? `<div class="aviso">Escala <b>1:${leitura.escala}</b>, lida da ficha do Revit.</div>`
+    : leitura.confiavel
+    ? `<div class="aviso">Escala <b>1:${leitura.escala}</b>, deduzida do desenho e conferida contra as áreas escritas na planta.</div>`
+    : `<div class="aviso alerta">Não consegui confirmar a escala (a planta tem poucos ambientes rotulados). Confira as áreas antes de usar a prancha.</div>`;
+}
+
+function coletar(attr) {
+  const o = {};
+  document.querySelectorAll(`[data-${attr}]`).forEach(el => { o[el.dataset[attr]] = el.value; });
+  return o;
+}
+
+/* ---------- gerar ---------- */
+$("semnum").onchange = () => { if (pronto && arq.planta) tentarLer(); };
+
+$("b-gerar").onclick = () => {
+  if (!arq.planta || !arq.fachada) { status("Faltam os PDFs da planta e da fachada.", true); return; }
+  $("c-detalhe").classList.add("esconde");
+  $("b-gerar").disabled = true; $("b-baixar").classList.add("esconde");
+  status("Gerando… isso leva de 20 a 60 segundos."); barra(20);
+  const num = id => parseFloat(($(id).value || "").replace(/\./g, "").replace(",", ".")) || null;
+  w.postMessage({
+    tipo: "gerar", planta: arq.planta, fachada: arq.fachada, ficha: arq.ficha,
+    titulo: $("titulo").value.trim(), lote: num("lote"),
+    construida: num("construida"), quintal: num("quintal"),
+    semNumero: $("semnum").value === "1",
+    pisos: coletar("piso"), apelidos: coletar("nome"),
+  });
+};
+
+function entregar(d) {
+  const bin = atob(d.pdf), u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  pdfGerado = URL.createObjectURL(new Blob([u8], { type: "application/pdf" }));
+  $("visual").src = pdfGerado;
+  $("c-saida").classList.remove("esconde");
+  $("b-baixar").classList.remove("esconde");
+  $("b-gerar").disabled = false;
+  const fora = d.conferencia.filter(x => !x.confiavel).map(x => x.nome);
+  status(fora.length
+    ? `Prancha pronta. ${d.conferencia.length - fora.length} de ${d.conferencia.length} ambientes repintados; sem repintar: ${fora.join(", ")}.`
+    : "Prancha pronta. Todos os ambientes conferem e foram repintados.", false);
+  barra(100);
+}
+
+$("b-baixar").onclick = () => {
+  const a = document.createElement("a");
+  a.href = pdfGerado;
+  a.download = ($("titulo").value || "PRANCHA").replace(/[^\wÀ-ÿ ]+/g, "").trim() + ".pdf";
+  a.click();
+};
+</script>
