@@ -1235,6 +1235,40 @@ def _scpo_executar(dados, step_cb, log_cb, done_cb,
             ).send_keys(EMP_TERCEIROS)
         except Exception as e: log_cb(f"  Emp. terceiros: {e}")
 
+        # Área da Obra (m²)
+        try:
+            area_val = dados.get("area_obra", "")
+            campo_area = None
+            for _by, _sel in (
+                (_By_scpo.ID, "txtAreaObra"),
+                (_By_scpo.ID, "txtArea"),
+                (_By_scpo.XPATH,
+                 "//*[contains(normalize-space(.),'rea da Obra') and not(*[contains(normalize-space(.),'rea da Obra')])]"
+                 "/following::input[@type='text'][1]"),
+                (_By_scpo.XPATH,
+                 "//input[@type='text' and (contains(@id,'Area') or contains(@id,'area') "
+                 "or contains(@id,'AREA'))]"),
+            ):
+                try:
+                    _els = [e for e in driver.find_elements(_by, _sel) if e.is_displayed()]
+                    if _els:
+                        campo_area = _els[0]
+                        break
+                except Exception:
+                    pass
+            if campo_area is None:
+                raise Exception("campo 'Área da Obra (m²)' não localizado")
+            campo_area.clear()
+            campo_area.send_keys(area_val)
+            # Garantia: se máscara/JS apagou o valor, grava direto via JS
+            if not (campo_area.get_attribute("value") or "").strip():
+                driver.execute_script(
+                    "arguments[0].value = arguments[1];"
+                    "arguments[0].dispatchEvent(new Event('change', {bubbles:true}));",
+                    campo_area, area_val)
+            log_cb(f"  Área da obra: {area_val} m²")
+        except Exception as e: log_cb(f"  Área da obra: {e}")
+
         step_cb(85, "Aguardando confirmação...")
         log_cb("✓ Formulário preenchido! Verifique o navegador.")
         log_cb("Clique 'Confirmar envio SCPO' quando estiver pronto.")
@@ -1406,6 +1440,7 @@ class App(tk.Tk):
             value=datetime.date.today().strftime("%d/%m/%Y")
         )
         self.var_scpo_senha = tk.StringVar()
+        self.var_scpo_area = tk.StringVar()
 
         # --- Coluna direita com Canvas+Scroll para todo o conteúdo ---
         # Botões fixos no rodapé (fora do scroll)
@@ -1542,6 +1577,7 @@ class App(tk.Tk):
         self._secao_label(p, "SCPO")
         self._campo_simples(p, self.var_scpo_data_inicio,
                             "Data de Início da Obra (DD/MM/AAAA)")
+        self._campo_simples(p, self.var_scpo_area, "Área da Obra (m²)")
         tk.Label(p, text="Senha SCPO",
                  bg=COR_FUNDO, fg=COR_TEXTO_SEC, font=("Segoe UI", 8)
                  ).pack(anchor="w")
@@ -1836,6 +1872,24 @@ class App(tk.Tk):
             messagebox.showwarning("SCPO", "Data de Início inválida. Use DD/MM/AAAA.")
             return
 
+        # Área da obra (m²) — aceita "85,50", "85.50" ou "1.234,56"; envia no padrão BR
+        area_txt = self.var_scpo_area.get().strip().replace(" ", "").replace("m²", "").replace("m2", "")
+        if not area_txt:
+            messagebox.showwarning("SCPO", "Preencha a Área da Obra (m²).")
+            return
+        if "," in area_txt:
+            area_num_txt = area_txt.replace(".", "").replace(",", ".")
+        else:
+            area_num_txt = area_txt
+        try:
+            area_num = float(area_num_txt)
+            if area_num <= 0:
+                raise ValueError
+        except ValueError:
+            messagebox.showwarning("SCPO", "Área da Obra inválida. Ex.: 85,50")
+            return
+        area_obra = f"{area_num:.2f}".replace(".", ",")
+
         # Separar quadra e lote de "QUADRA X LOTE Y"
         import re as _re
         ql_upper = ql.upper()
@@ -1864,7 +1918,8 @@ class App(tk.Tk):
             "rua2":            rua2,
             "ruas_casas":      ruas_casas,
             "data_inicio":     self.var_scpo_data_inicio.get().strip(),
-            "nome_obra":       _scpo_montar_nome_obra(
+            "area_obra":       area_obra,
+            "nome_obra":      _scpo_montar_nome_obra(
                                    self.var_logradouro.get().strip(), ql),
             "observacao":      _scpo_montar_observacao(
                                    self.var_logradouro.get().strip(), ql,
